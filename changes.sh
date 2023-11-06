@@ -9,6 +9,7 @@ existing_dash=$(curl -k -X POST -H "Content-Type: application/json" -d '{"jsonrp
 # existing_dash=$(curl -k -X POST -H "Content-Type: application/json" -d '{"jsonrpc": "2.0", "method": "dashboard.get", "params": {"output": "extend", "selectPages": "extend", "selectUsers": "extend", "selectUserGroups": "extend", "dashboardids": ["226"]},"id": 2, "auth": "'$auth'"}' "$zabbix_url")
 data_file="/tmp/zabbix_dash.json"
 
+# color=$(printf "%02x%02x%02x\n" $((RANDOM%128)) $((RANDOM%128)) $((RANDOM%128)))
 
 ##################################### Json Part1 ######################################################
 case ${existing_dash} in
