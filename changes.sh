@@ -36,16 +36,26 @@ esac
 ##################################### Json Part2 ######################################################
 svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count;Memory: Heap memory maximum size"
 pattern="eu-we1-*.ppe.wpt.local"
-placey=0
-place=1
+place=0
+x_position=0
+y_position=0
+
 IFS=";"
 for type in ${svggraph_type_list}
 do
-placey=$(( place * 4 + 5))
+    # Calculate x and y positions
+    if (( place % 2 == 0 )); then
+        x_position=0
+        y_position=$(( (place / 2) * 6 ))
+    else
+        x_position=12 # Assuming the width of each graph is 12
+    fi
 
-# json_part2='{"type": "svggraph","name": "'$type'","x": "1","y": "'$placey'","width": "11","height": "4","view_mode": "0","fields": [{"type": "0","name": "legend","value": "0"},'
-json_part2='{"type":"svggraph","name":"'$type'","x":"0","y":"'$placey'","width":"12","height":"6","view_mode":"0","fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"5E35B1"}]},'
-echo -n "$json_part2" >> $data_file
+    json_part2='{"type":"svggraph","name":"'$type'","x":"'$x_position'","y":"'$y_position'","width":"12","height":"6","view_mode":"0","fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"5E35B1"}]},'
+    echo -n "$json_part2" >> $data_file
+
+    # Increment place for the next widget's position
+    place=$((place + 1))
 done
 ##################################### Json Final ######################################################
 truncate -s -1 $data_file
