@@ -34,7 +34,7 @@ echo -n "$json_part1" >> $data_file
 esac
 
 ##################################### Json Part2 ######################################################
-svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count"
+svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count;Memory: Heap memory maximum size"
 pattern="eu-we1-*.ppe.wpt.local"
 placey=0
 place=1
