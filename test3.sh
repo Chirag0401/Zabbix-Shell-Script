@@ -65,9 +65,4 @@ sed -i '$ s/,$//' $data_file
 json_final=']}]},"auth":"'$auth'","id":1}'
 echo "$json_final" >> $data_file
 
-if ! jq empty $data_file; then
-    echo "JSON is invalid. Please check the $data_file file for syntax errors."
-    exit 1
-fi
-
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
