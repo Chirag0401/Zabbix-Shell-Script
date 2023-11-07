@@ -62,10 +62,28 @@ do
   place=$((place + 1))
 done
 
-truncate -s -1 $data_file
+# truncate -s -1 $data_file
+# json_final=']}]},"auth":"'$auth'","id":1}'
+# echo -n "$json_final" >> $data_file
+# Remove the last comma from the JSON array of widgets
+sed -i '$ s/,$//' $data_file
+
+# Add the final part of the JSON
 json_final=']}]},"auth":"'$auth'","id":1}'
-echo -n "$json_final" >> $data_file
+echo "$json_final" >> $data_file
+
+# Validate JSON before sending
+if ! jq empty $data_file; then
+    echo "JSON is invalid. Please check the $data_file file for syntax errors."
+    exit 1
+fi
+
+# Print JSON for debugging
+cat $data_file
+
+# Send the final dashboard JSON to Zabbix
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
+# curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
 
 
 
