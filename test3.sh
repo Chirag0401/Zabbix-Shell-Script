@@ -25,9 +25,9 @@ esac
 echo -n "$json_part1" > $data_file
 
 # Variables for widget placement
-top_widget_height=4
+top_widget_height=6
 top_widget_width=12
-graph_widget_height=4
+graph_widget_height=6
 graph_widget_width=12
 dashboard_max_width=24  # Dashboard width
 dashboard_max_height=62 # Dashboard height
@@ -40,7 +40,7 @@ ENV="patching"
 TopHostsCount=100
 
 # Add top_hosts widgets
-top_hosts_metrics=("CPU")
+top_hosts_metrics=("CPU" "Memory" "Disk" "Network")
 for metric in "${top_hosts_metrics[@]}"; do
   if (( y + top_widget_height > dashboard_max_height )); then
     echo "Error: Widget placement for 'top_hosts' exceeds dashboard height."
@@ -74,6 +74,7 @@ for type in ${svggraph_type_list}; do
   fi
   color=$(generate_dark_color)
   json_svggraph_widget='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":'$graph_widget_width',"height":'$graph_widget_height',"view_mode":0,"fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"'$color'"}]},'
+    echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
   echo -n "$json_svggraph_widget" >> $data_file
   x=$((x + graph_widget_width))
   # Start a new row after every two widgets
@@ -93,4 +94,23 @@ if ! jq empty $data_file; then
     exit 1
 fi
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
-#{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Overlapping widgets at X:0, Y:4 on page #1 of dashboard \"WPTT\".","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboardGeneral.php","line":337,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":270,"function":"checkWidgets","class":"CDashboardGeneral","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
+
+# this is for top_hosts widgets
+# Placing widget at X:0 Y:0 with Width:12 Height:6
+# Placing widget at X:0 Y:6 with Width:12 Height:6
+# Placing widget at X:0 Y:12 with Width:12 Height:6
+# Placing widget at X:0 Y:18 with Width:12 Height:6
+
+# This is for graph widgets
+# Placing widget at X:0 Y:24 with Width:12 Height:6
+# Placing widget at X:12 Y:24 with Width:12 Height:6
+# Placing widget at X:0 Y:30 with Width:12 Height:6
+# Placing widget at X:12 Y:30 with Width:12 Height:6
+# Placing widget at X:0 Y:36 with Width:12 Height:6
+# Placing widget at X:12 Y:36 with Width:12 Height:6
+# Placing widget at X:0 Y:42 with Width:12 Height:6
+# Placing widget at X:12 Y:42 with Width:12 Height:6
+# Placing widget at X:0 Y:48 with Width:12 Height:6
+# Placing widget at X:12 Y:48 with Width:12 Height:6
+# Placing widget at X:0 Y:54 with Width:12 Height:6
+# {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Overlapping widgets at X:0, Y:6 on page #1 of dashboard \"WPTT\".","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboardGeneral.php","line":337,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":270,"function":"checkWidgets","class":"CDashboardGeneral","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
