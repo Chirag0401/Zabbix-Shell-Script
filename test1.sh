@@ -58,6 +58,7 @@ do
   fi
   color=$(generate_dark_color)
   json_part2='{"type":"svggraph","name":"'$type'","x":"'$x'","y":"'$y'","width":"12","height":"6","view_mode":"0","fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"'$color'"}]},'
+  echo "Widget: $type, X: $x, Y: $y, Width: 12, Height: 6"
   echo -n "$json_part2" >> $data_file
   place=$((place + 1))
 done
