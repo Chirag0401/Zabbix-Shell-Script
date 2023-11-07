@@ -30,8 +30,8 @@ top_widget_height=6
 top_widget_width=24
 graph_widget_height=6
 graph_widget_width=12
-dashboard_max_width=24  # Adjusted dashboard width
-dashboard_max_height=64 # Assuming the dashboard height is 64 units
+dashboard_max_width=24  # Dashboard width
+dashboard_max_height=62 # Dashboard height
 x=0
 y=0
 
