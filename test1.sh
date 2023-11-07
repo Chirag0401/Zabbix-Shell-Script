@@ -66,3 +66,7 @@ truncate -s -1 $data_file
 json_final=']}]},"auth":"'$auth'","id":1}'
 echo -n "$json_final" >> $data_file
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
+
+
+
+# {"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error","data":"Invalid JSON. An error occurred on the server while parsing the JSON text."},"id":null}
