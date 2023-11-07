@@ -25,52 +25,66 @@ esac
 
 echo -n "$json_part1" > $data_file
 
-top_hosts_metrics=("CPU" "Memory" "Disk" "Network")
+# Variables for widget placement
 top_widget_height=6
-top_widget_y=0
-widgets_per_column=$(( 48 / top_widget_height ))
-column=0
+top_widget_width=24
+graph_widget_height=6
+graph_widget_width=12
+dashboard_max_width=48  # Assuming the dashboard width is 48 units
+dashboard_max_height=64 # Assuming the dashboard height is 64 units
+x=0
+y=0
 
+# Add top_hosts widgets
+top_hosts_metrics=("CPU" "Memory" "Disk" "Network")
 for metric in "${top_hosts_metrics[@]}"; do
-  if (( top_widget_y / top_widget_height >= widgets_per_column )); then
-    column=$((column + 24))
-    top_widget_y=0
+  if (( y + top_widget_height > dashboard_max_height )); then
+    echo "Error: Widget placement for 'top_hosts' exceeds dashboard height."
+    exit 1
   fi
-  json_top_hosts_widget='{"type":"top_hosts","name":"Top Hosts by '"$metric"'","x":'$column',"y":'$top_widget_y',"width":24,"height":'$top_widget_height',"view_mode":0,"fields":[{"type":"0","name":"sort_triggers","value":"1"}]},'
+  json_top_hosts_widget='{"type":"top_hosts","name":"Top Hosts by '"$metric"'","x":'$x',"y":'$y',"width":'$top_widget_width',"height":'$top_widget_height',"view_mode":0,"fields":[{"type":"0","name":"sort_triggers","value":"1"}]},'
   echo -n "$json_top_hosts_widget" >> $data_file
-  top_widget_y=$((top_widget_y + top_widget_height))
+  y=$((y + top_widget_height))
 done
 
-# Reset y to start from the next position after the last top host widget
-y=$top_widget_y
+# Calculate starting position for svggraph widgets
+x=0  # Reset X position to start at the beginning of the next row
+# Ensure y is at the start of the next row if top_hosts widgets didn't exactly fill the last row
+if (( y % graph_widget_height != 0 )); then
+  y=$(( (y / graph_widget_height + 1) * graph_widget_height ))
+fi
 
+# Add svggraph widgets
 svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count;Memory: Heap memory maximum size;Memory: Heap memory used;Memory: Non-Heap memory used;Memory: Heap memory committed;Memory: Non-Heap memory committed;Threading: Total started thread count;Threading: Peak thread count;OperatingSystem: File descriptors opened;OperatingSystem: Process CPU Load"
 pattern="eu-we1-*.ppe.wpt.local"
-place=0
-x=$column
-
 IFS=";"
 for type in ${svggraph_type_list}; do
-  if (( place / widgets_per_column >= 1 )); then
-    x=$((x + 12))
-    place=0
-    y=$top_widget_y  # Reset y to the next available position after top widgets
+  if (( x + graph_widget_width > dashboard_max_width )); then
+    x=0
+    y=$((y + graph_widget_height))
+  fi
+  if (( y + graph_widget_height > dashboard_max_height )); then
+    echo "Error: Widget placement for 'svggraph' exceeds dashboard height."
+    exit 1
   fi
   color=$(generate_dark_color)
-  json_part2='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":12,"height":6,"view_mode":0,"fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"'$color'"}]},'
-  echo -n "$json_part2" >> $data_file
-  y=$((y + 6))
-  place=$((place + 1))
+  json_svggraph_widget='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":'$graph_widget_width',"height":'$graph_widget_height',"view_mode":0,"fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"'$color'"}]},'
+  echo -n "$json_svggraph_widget" >> $data_file
+  x=$((x + graph_widget_width))
+  # Start a new row after every two widgets
+  if (( x >= dashboard_max_width )); then
+    x=0
+    y=$((y + graph_widget_height))
+  fi
 done
 
-sed -i '$ s/,$//' $data_file
-json_final=']}]},"auth":"'$auth'","id":1}'
-echo "$json_final" >> $data_file
+# Finalize the JSON file
+sed -i '$ s/,$//' $data_file  # Remove the last comma
+echo -n ']}]},"auth":"'$auth'","id":1}' >> $data_file
 
+# Validate and send the JSON to Zabbix
 if ! jq empty $data_file; then
     echo "JSON is invalid. Please check the $data_file file for syntax errors."
     exit 1
 fi
-
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
-#{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Invalid parameter \"/1/pages/1/widgets/12/y\": value must be one of 0-62.","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":264,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
