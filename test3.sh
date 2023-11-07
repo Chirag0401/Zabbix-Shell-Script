@@ -30,7 +30,7 @@ top_widget_height=6
 top_widget_width=24
 graph_widget_height=6
 graph_widget_width=12
-dashboard_max_width=48  # Assuming the dashboard width is 48 units
+dashboard_max_width=24  # Adjusted dashboard width
 dashboard_max_height=64 # Assuming the dashboard height is 64 units
 x=0
 y=0
@@ -88,4 +88,3 @@ if ! jq empty $data_file; then
     exit 1
 fi
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
-#{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Invalid parameter \"/1/pages/1/widgets/7/x\": value must be one of 0-23.","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":264,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
