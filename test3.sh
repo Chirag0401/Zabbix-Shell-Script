@@ -73,8 +73,17 @@ for netgroup in "${network_groups[@]}"; do
     y=$((y + top_widget_height))
   fi
 done
+
+if (( x + top_widget_width > dashboard_max_width )); then
+  x=0
+  y=$((y + top_widget_height))
+fi
+
+json_problem_widgets={"type":"problems","name":"","x":"'$x'","y":"'$y'","width":"24","height":"4","view_mode":"0","fields":[{"type":"1","name":"tags.tag.2","value":"'$i'"},{"type":"0","name":"tags.operator.2","value":"0"},{"type":"1","name":"tags.value.2","value":"'$i'"},{"type":"2","name":"groupids","value":"36"},{"type":"0","name":"severities","value":"3"},{"type":"0","name":"severities","value":"5"},{"type":"1","name":"tags.tag.0","value":"project"},{"type":"0","name":"tags.operator.0","value":"0"},{"type":"1","name":"tags.value.0","value":"'$j'"},{"type":"1","name":"tags.tag.1","value":"env"},{"type":"0","name":"tags.operator.1","value":"0"},{"type":"1","name":"tags.value.1","value":"'$ENV'"}]},
+echo -n "$json_problem_widget" >> $data_file
+x=0
+y=$((y + 4))
 # Calculate starting position for svggraph widgets
-x=0  # Reset X position to start at the beginning of the next row
 # Ensure y is at the start of the next row if top_hosts widgets didn't exactly fill the last row
 if (( y % graph_widget_height != 0 )); then
   y=$(( (y / graph_widget_height + 1) * graph_widget_height ))
@@ -83,6 +92,7 @@ fi
 # Add svggraph widgets
 svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count;Memory: Heap memory maximum size;Memory: Heap memory used;Memory: Non-Heap memory used;Memory: Heap memory committed;Memory: Non-Heap memory committed;Threading: Total started thread count;Threading: Peak thread count;OperatingSystem: File descriptors opened;OperatingSystem: Process CPU Load"
 pattern="eu-we1-*.ppe.wpt.local"
+host_group=eu-we1-ca01.ppe.bcs.local, eu-ce1-c-mgt11.ppe.wpt.local,eu-ce1-c-zrd11.ppe.wpt.local
 IFS=";"
 for type in ${svggraph_type_list}; do
   if (( x + graph_widget_width > dashboard_max_width )); then
@@ -94,6 +104,9 @@ for type in ${svggraph_type_list}; do
     exit 1
   fi
   color=$(generate_dark_color)
+  for host in host_group; do
+  pattern_list =+ {"type":"1","name":"ds.hosts.0.0","value":"'$host'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},
+  done
   json_svggraph_widget='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":'$graph_widget_width',"height":'$graph_widget_height',"view_mode":0,"fields":[{"type":"0","name":"ds.transparency.0","value":"1"},{"type":"0","name":"ds.fill.0","value":"2"},{"type":"0","name":"righty","value":"0"},{"type":"1","name":"ds.hosts.0.0","value":"'$pattern'"},{"type":"1","name":"ds.items.0.0","value":"'$type'"},{"type":"0","name":"ds.type.0","value":"2"},{"type":"0","name":"ds.width.0","value":"4"},{"type":"1","name":"ds.color.0","value":"'$color'"}]},'
     echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
   echo -n "$json_svggraph_widget" >> $data_file
@@ -115,6 +128,3 @@ if ! jq empty $data_file; then
     exit 1
 fi
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
-
-
-json_problem_widgets={"widgetid":"556299","type":"problems","name":"","x":"0","y":"7","width":"23","height":"4","view_mode":"0","fields":[{"type":"1","name":"tags.tag.2","value":"region"},{"type":"0","name":"tags.operator.2","value":"0"},{"type":"1","name":"tags.value.2","value":"eu-west-1"},{"type":"2","name":"groupids","value":"36"},{"type":"0","name":"severities","value":"3"},{"type":"0","name":"severities","value":"5"},{"type":"1","name":"tags.tag.0","value":"project"},{"type":"0","name":"tags.operator.0","value":"0"},{"type":"1","name":"tags.value.0","value":"wpt"},{"type":"1","name":"tags.tag.1","value":"env"},{"type":"0","name":"tags.operator.1","value":"0"},{"type":"1","name":"tags.value.1","value":"ppe"}]},
