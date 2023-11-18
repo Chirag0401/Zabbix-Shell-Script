@@ -95,49 +95,48 @@ if (( y % graph_widget_height != 0 )); then
   y=$(( (y / graph_widget_height + 1) * graph_widget_height ))
 fi
 
-# ... [previous code]
-
 # Add svggraph widgets
 svggraph_type_list=("Threading: Thread Count" "Threading: Daemon thread count" "Memory: Heap memory maximum size" "Memory: Heap memory used" "Memory: Non-Heap memory used" "Memory: Heap memory committed" "Memory: Non-Heap memory committed" "Threading: Total started thread count" "Threading: Peak thread count" "OperatingSystem: File descriptors opened" "OperatingSystem: Process CPU Load")
 host_group=("eu-we1-ca01.ppe.bcs.local" "eu-ce1-c-mgt11.ppe.wpt.local" "eu-ce1-c-zrd11.ppe.wpt.local")
 
+# Calculate the maximum number of widgets that can fit vertically
+max_widgets_vertically=$((dashboard_max_height / graph_widget_height))
+
+# Loop through each item type to create a widget
 for type in "${svggraph_type_list[@]}"; do
-  if (( x + graph_widget_width > dashboard_max_width )); then
-    x=0
-    y=$((y + graph_widget_height))
+  # Check if we need to start a new column
+  if (( y / graph_widget_height >= max_widgets_vertically )); then
+    x=$((x + graph_widget_width))
+    y=0  # Reset y position for the new column
   fi
-  if (( y + graph_widget_height > dashboard_max_height )); then
-    echo "Error: Widget placement for 'svggraph' exceeds dashboard height."
+
+  # Check if we have space for a new column
+  if (( x + graph_widget_width > dashboard_max_width )); then
+    echo "Error: No more space for a new widget column."
     exit 1
   fi
 
-  # Start the JSON for the svggraph widget
+  # Initialize the JSON for the svggraph widget
   json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":["
 
-  # Add datasets for each host
+  # Loop through each host to create individual datasets for the current type
   for host in "${host_group[@]}"; do
-    color=$(generate_dark_color) # Color for the dataset, you might want to make this static if you need consistency
+    color=$(generate_dark_color)  # Generate a color for the dataset
     json_svggraph_widget+="{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"},"
   done
 
   # Remove the last comma and close the JSON object
   json_svggraph_widget="${json_svggraph_widget%,}]},"
 
+  # Output the placement information for debugging
   echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
+
+  # Append the widget JSON to the data file
   echo -n "$json_svggraph_widget" >> $data_file
 
-  # Increment y for the next widget, reset x if necessary
+  # Increment y for the next widget within the same column
   y=$((y + graph_widget_height))
-  if (( y >= dashboard_max_height )); then
-    x=$((x + graph_widget_width))
-    y=0
-  fi
 done
-
-# ... [rest of the code]
-
-
-
 
 # Finalize the JSON file
 sed -i '$ s/,$//' $data_file  # Remove the last comma
