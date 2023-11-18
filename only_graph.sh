@@ -80,11 +80,16 @@ done
 sed -i '$ s/,$//' $data_file  # Remove the last comma
 echo -n ']}]},"auth":"'$auth'","id":1}' >> $data_file
 
+# Output the JSON content for debugging
+cat $data_file
+
 # Validate and send the JSON to Zabbix
 if ! jq empty $data_file; then
     echo "JSON is invalid. Please check the $data_file file for syntax errors."
     exit 1
 fi
+
+# Send the JSON to Zabbix
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
 
 
