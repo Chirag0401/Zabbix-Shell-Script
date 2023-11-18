@@ -96,40 +96,33 @@ if (( y % graph_widget_height != 0 )); then
 fi
 
 # Add svggraph widgets
-svggraph_type_list="Threading: Thread Count;Threading: Daemon thread count;Memory: Heap memory maximum size;Memory: Heap memory used;Memory: Non-Heap memory used;Memory: Heap memory committed;Memory: Non-Heap memory committed;Threading: Total started thread count;Threading: Peak thread count;OperatingSystem: File descriptors opened;OperatingSystem: Process CPU Load"
+svggraph_type_list=("Threading: Thread Count" "Threading: Daemon thread count" "Memory: Heap memory maximum size" "Memory: Heap memory used" "Memory: Non-Heap memory used" "Memory: Heap memory committed" "Memory: Non-Heap memory committed" "Threading: Total started thread count" "Threading: Peak thread count" "OperatingSystem: File descriptors opened" "OperatingSystem: Process CPU Load")
 host_group=("eu-we1-ca01.ppe.bcs.local" "eu-ce1-c-mgt11.ppe.wpt.local" "eu-ce1-c-zrd11.ppe.wpt.local")
 
-IFS=";"
-for type in ${svggraph_type_list}; do
-  if (( x + graph_widget_width > dashboard_max_width )); then
-    x=0
-    y=$((y + graph_widget_height))
-  fi
-  if (( y + graph_widget_height > dashboard_max_height )); then
-    echo "Error: Widget placement for 'svggraph' exceeds dashboard height."
-    exit 1
-  fi
-  color=$(generate_dark_color)
+for host in "${host_group[@]}"; do
+  for type in "${svggraph_type_list[@]}"; do
+    if (( x + graph_widget_width > dashboard_max_width )); then
+      x=0
+      y=$((y + graph_widget_height))
+    fi
+    if (( y + graph_widget_height > dashboard_max_height )); then
+      echo "Error: Widget placement for 'svggraph' exceeds dashboard height."
+      exit 1
+    fi
+    color=$(generate_dark_color)
 
-  # Start the JSON for svggraph widget
-  json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":["
+    # Define the JSON for each svggraph widget for each host and type
+    json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type - $host\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":[{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"}]},"
 
-  # Loop over each host and create a dataset
-  for host in "${host_group[@]}"; do
-    json_svggraph_widget+="{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"},"
+    echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
+    echo -n "$json_svggraph_widget" >> $data_file
+
+    x=$((x + graph_widget_width))
+    if (( x >= dashboard_max_width )); then
+      x=0
+      y=$((y + graph_widget_height))
+    fi
   done
-
-  # Remove the last comma and close the JSON object
-  json_svggraph_widget="${json_svggraph_widget%,}]},"
-
-  echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
-  echo -n "$json_svggraph_widget" >> $data_file
-
-  x=$((x + graph_widget_width))
-  if (( x >= dashboard_max_width )); then
-    x=0
-    y=$((y + graph_widget_height))
-  fi
 done
 
 # Finalize the JSON file
