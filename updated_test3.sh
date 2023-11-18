@@ -152,7 +152,7 @@ curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_
 # [ec2-user@ip-10-140-241-119 zabbix-scripts]$ sh test3.sh
 #   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
 #                                  Dload  Upload   Total   Spent    Left  Speed
-# 100  1249  100  1072  100   177  32627   5387 --:--:-- --:--:-- --:--:-- 39031
+# 100  1249  100  1072  100   177  25928   4281 --:--:-- --:--:-- --:--:-- 31225
 # Placing widget at X:0 Y:0 with Width:24 Height:6
 # Placing widget at X:0 Y:6 with Width:24 Height:6
 # Placing widget at X:0 Y:18 with Width:12 Height:6
@@ -162,5 +162,9 @@ curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_
 # Placing widget at X:0 Y:42 with Width:12 Height:6
 # Placing widget at X:0 Y:48 with Width:12 Height:6
 # Placing widget at X:0 Y:54 with Width:12 Height:6
-# Error: Widget placement for 'svggraph' exceeds dashboard height.
+# Placing widget at X:12 Y:0 with Width:12 Height:6
+# Placing widget at X:12 Y:6 with Width:12 Height:6
+# Placing widget at X:12 Y:12 with Width:12 Height:6
+# Placing widget at X:12 Y:18 with Width:12 Height:6
+# {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Overlapping widgets at X:12, Y:0 on page #1 of dashboard \"WPTT\".","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboardGeneral.php","line":337,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":270,"function":"checkWidgets","class":"CDashboardGeneral","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
 
