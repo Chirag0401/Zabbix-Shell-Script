@@ -110,19 +110,21 @@ for type in ${svggraph_type_list}; do
     exit 1
   fi
   color=$(generate_dark_color)
-  pattern_list=""
+
+  # Start the JSON for svggraph widget
+  json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":["
+
+  # Loop over each host and create a dataset
   for host in "${host_group[@]}"; do
-    pattern_list+="{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},"
+    json_svggraph_widget+="{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"},"
   done
 
-  # Define the JSON for svggraph widget with individual datasets for each host
-  json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":[{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},$pattern_list{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"}]},"
-  
-  # Output for debugging
+  # Remove the last comma and close the JSON object
+  json_svggraph_widget="${json_svggraph_widget%,}]},"
+
   echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
   echo -n "$json_svggraph_widget" >> $data_file
-  
-  # Update position for next widget
+
   x=$((x + graph_widget_width))
   if (( x >= dashboard_max_width )); then
     x=0
