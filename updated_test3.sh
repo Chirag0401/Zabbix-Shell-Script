@@ -95,20 +95,38 @@ if (( y % graph_widget_height != 0 )); then
   y=$(( (y / graph_widget_height + 1) * graph_widget_height ))
 fi
 
+# ... [previous code]
+
 # Add svggraph widgets
 svggraph_type_list=("Threading: Thread Count" "Threading: Daemon thread count" "Memory: Heap memory maximum size" "Memory: Heap memory used" "Memory: Non-Heap memory used" "Memory: Heap memory committed" "Memory: Non-Heap memory committed" "Threading: Total started thread count" "Threading: Peak thread count" "OperatingSystem: File descriptors opened" "OperatingSystem: Process CPU Load")
 host_group=("eu-we1-ca01.ppe.bcs.local" "eu-ce1-c-mgt11.ppe.wpt.local" "eu-ce1-c-zrd11.ppe.wpt.local")
 
+# Calculate the maximum number of widgets that can fit vertically and horizontally
+max_widgets_vertically=$((dashboard_max_height / graph_widget_height))
+max_widgets_horizontally=$((dashboard_max_width / graph_widget_width))
+
+# Initialize counters for widget placement
+widget_count_vertically=0
+widget_count_horizontally=0
+
 for host in "${host_group[@]}"; do
   for type in "${svggraph_type_list[@]}"; do
-    if (( x + graph_widget_width > dashboard_max_width )); then
-      x=0
-      y=$((y + graph_widget_height))
+    if (( widget_count_vertically >= max_widgets_vertically )); then
+      # Reset vertical counter and increment horizontal counter
+      widget_count_vertically=0
+      widget_count_horizontally=$((widget_count_horizontally + 1))
+
+      # Check if horizontal limit is reached
+      if (( widget_count_horizontally >= max_widgets_horizontally )); then
+        echo "Error: Maximum widget placement reached (both vertically and horizontally)."
+        exit 1
+      fi
+
+      # Reset y to 0 and increment x for new column
+      y=0
+      x=$((widget_count_horizontally * graph_widget_width))
     fi
-    if (( y + graph_widget_height > dashboard_max_height )); then
-      echo "Error: Widget placement for 'svggraph' exceeds dashboard height."
-      exit 1
-    fi
+
     color=$(generate_dark_color)
 
     # Define the JSON for each svggraph widget for each host and type
@@ -117,13 +135,13 @@ for host in "${host_group[@]}"; do
     echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
     echo -n "$json_svggraph_widget" >> $data_file
 
-    x=$((x + graph_widget_width))
-    if (( x >= dashboard_max_width )); then
-      x=0
-      y=$((y + graph_widget_height))
-    fi
+    # Increment y and vertical counter for the next widget
+    y=$((y + graph_widget_height))
+    widget_count_vertically=$((widget_count_vertically + 1))
   done
 done
+
+# ... [rest of the code]
 
 # Finalize the JSON file
 sed -i '$ s/,$//' $data_file  # Remove the last comma
