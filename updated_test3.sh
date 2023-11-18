@@ -135,3 +135,27 @@ if ! jq empty $data_file; then
     exit 1
 fi
 curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_url"
+
+
+
+#[ec2-user@ip-10-140-241-119 zabbix-scripts]$ sh test3.sh
+#   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+#                                  Dload  Upload   Total   Spent    Left  Speed
+# 100  1249  100  1072  100   177  24712   4080 --:--:-- --:--:-- --:--:-- 29046
+# Placing widget at X:0 Y:0 with Width:24 Height:6
+# Placing widget at X:0 Y:6 with Width:24 Height:6
+# Placing widget at X:0 Y:18 with Width:12 Height:6
+# Placing widget at X:12 Y:18 with Width:12 Height:6
+# Placing widget at X:0 Y:24 with Width:12 Height:6
+# Placing widget at X:12 Y:24 with Width:12 Height:6
+# Placing widget at X:0 Y:30 with Width:12 Height:6
+# Placing widget at X:12 Y:30 with Width:12 Height:6
+# Placing widget at X:0 Y:36 with Width:12 Height:6
+# Placing widget at X:12 Y:36 with Width:12 Height:6
+# Placing widget at X:0 Y:42 with Width:12 Height:6
+# Placing widget at X:12 Y:42 with Width:12 Height:6
+# Placing widget at X:0 Y:48 with Width:12 Height:6
+# Placing widget at X:12 Y:48 with Width:12 Height:6
+# Placing widget at X:0 Y:54 with Width:12 Height:6
+# Placing widget at X:12 Y:54 with Width:12 Height:6
+# Error: Widget placement for 'svggraph' exceeds dashboard height.
