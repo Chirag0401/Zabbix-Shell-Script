@@ -97,8 +97,6 @@ fi
 
 # ... [previous code]
 
-# ... [previous code]
-
 # Add svggraph widgets
 svggraph_type_list=("Threading: Thread Count" "Threading: Daemon thread count" "Memory: Heap memory maximum size" "Memory: Heap memory used" "Memory: Non-Heap memory used" "Memory: Heap memory committed" "Memory: Non-Heap memory committed" "Threading: Total started thread count" "Threading: Peak thread count" "OperatingSystem: File descriptors opened" "OperatingSystem: Process CPU Load")
 host_group=("eu-we1-ca01.ppe.bcs.local" "eu-ce1-c-mgt11.ppe.wpt.local" "eu-ce1-c-zrd11.ppe.wpt.local")
@@ -113,13 +111,12 @@ for type in "${svggraph_type_list[@]}"; do
     exit 1
   fi
 
-  color=$(generate_dark_color)
-
   # Start the JSON for the svggraph widget
   json_svggraph_widget="{\"type\":\"svggraph\",\"name\":\"$type\",\"x\":$x,\"y\":$y,\"width\":$graph_widget_width,\"height\":$graph_widget_height,\"view_mode\":0,\"fields\":["
 
-  # Loop over each host to create a dataset for the current type
+  # Add datasets for each host
   for host in "${host_group[@]}"; do
+    color=$(generate_dark_color) # Color for the dataset, you might want to make this static if you need consistency
     json_svggraph_widget+="{\"type\":\"1\",\"name\":\"ds.hosts.0.0\",\"value\":\"$host\"},{\"type\":\"1\",\"name\":\"ds.items.0.0\",\"value\":\"$type\"},{\"type\":\"0\",\"name\":\"ds.transparency.0\",\"value\":\"1\"},{\"type\":\"0\",\"name\":\"ds.fill.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"righty\",\"value\":\"0\"},{\"type\":\"0\",\"name\":\"ds.type.0\",\"value\":\"2\"},{\"type\":\"0\",\"name\":\"ds.width.0\",\"value\":\"4\"},{\"type\":\"1\",\"name\":\"ds.color.0\",\"value\":\"$color\"},"
   done
 
@@ -129,13 +126,16 @@ for type in "${svggraph_type_list[@]}"; do
   echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
   echo -n "$json_svggraph_widget" >> $data_file
 
-  # Increment x for the next widget
-  x=$((x + graph_widget_width))
-  if (( x >= dashboard_max_width )); then
-    x=0
-    y=$((y + graph_widget_height))
+  # Increment y for the next widget, reset x if necessary
+  y=$((y + graph_widget_height))
+  if (( y >= dashboard_max_height )); then
+    x=$((x + graph_widget_width))
+    y=0
   fi
 done
+
+# ... [rest of the code]
+
 
 
 
