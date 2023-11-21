@@ -169,3 +169,17 @@ curl -k -X POST -H "Content-Type: application/json" --data @$data_file "$zabbix_
 # Placing widget at X:12 Y:12 with Width:12 Height:6
 # Placing widget at X:12 Y:18 with Width:12 Height:6
 # {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params.","data":"Overlapping widgets at X:12, Y:0 on page #1 of dashboard \"WPTT\".","debug":[{"file":"/usr/share/zabbix/include/classes/api/services/CDashboardGeneral.php","line":337,"function":"exception","class":"CApiService","type":"::"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":270,"function":"checkWidgets","class":"CDashboardGeneral","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/services/CDashboard.php","line":160,"function":"validateCreate","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/api/clients/CLocalApiClient.php","line":121,"function":"create","class":"CDashboard","type":"->"},{"file":"/usr/share/zabbix/include/classes/core/CJsonRpc.php","line":75,"function":"callMethod","class":"CLocalApiClient","type":"->"},{"file":"/usr/share/zabbix/api_jsonrpc.php","line":63,"function":"execute","class":"CJsonRpc","type":"->"}]},"id":1}
+
+curl -k -X POST -H 'Content-Type: application/json' \
+     -d '{
+           "jsonrpc": "2.0",
+           "method": "dashboard.get",
+           "params": {
+             "output": "extend",
+             "selectWidgets": "extend",
+             "dashboardids": ["YOUR_DASHBOARD_ID"]
+           },
+           "auth": "'$auth'",
+           "id": 1
+         }' \
+     "$zabbix_url"
