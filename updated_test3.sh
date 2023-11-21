@@ -115,7 +115,7 @@ for type in ${svggraph_type_list}; do
   # Remove the trailing comma
   fields_array=${fields_array%,}
 
-  json_svggraph_widget='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":'$graph_widget_width',"height":'$graph_widget_height',"view_mode":0,"fields":['$fields_array']}'
+  json_svggraph_widget='{"type":"svggraph","name":"'$type'","x":'$x',"y":'$y',"width":'$graph_widget_width',"height":'$graph_widget_height',"view_mode":0,"fields":['$fields_array']},'
 
   echo "Placing widget at X:$x Y:$y with Width:$graph_widget_width Height:$graph_widget_height"
   echo -n "$json_svggraph_widget" >> $data_file
