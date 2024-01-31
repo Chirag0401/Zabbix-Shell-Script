@@ -202,3 +202,53 @@ Use Case: Optimizes server performance and security, ensuring the server runs ef
 
 
 https://people.planetpostgresql.org/devrim/index.php?/archives/117-How-To-Build-Your-Own-PostgreSQL-and-related-software-RPMs-on-RHELRockyFedora.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%define version 14.10
+%define release 10
+Summary: PostgreSQL relational database management system
+Name: postgresql
+Version: %{version}
+Release: %{release}
+License: PostgreSQL
+URL: https://www.postgresql.org/
+Source0: https://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.gz
+BuildRequires: readline-devel zlib-devel
+%description
+PostgreSQL is an advanced object-relational database management system (DBMS).
+%prep
+%setup -q -n postgresql-%{version}
+%build
+./configure
+make
+%install
+make install DESTDIR=%{buildroot}
+%files
+%{_prefix}/bin/*
+%{_prefix}/include/*
+%{_prefix}/lib/*
+%{_prefix}/share/man/man1/*
+
+
+rpmbuild -ba ~/rpmbuild/SPECS/postgresql.spec
+
+
+File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.10-10.x86_64/usr/bin/*
+    File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.10-10.x86_64/usr/include/*
+    File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.10-10.x86_64/usr/share/man/man1/*
