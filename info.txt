@@ -325,3 +325,33 @@ make install DESTDIR=%{buildroot}
 %{_prefix}/lib/*
 # Conditionally include man pages if they exist
 %exclude %{_prefix}/share/man/man1/*
+
+
+
+
+
+
+# #Save Record In Route53 -- dmz-sqd-ep--
+resource "aws_route53_record" "dmz-sqd-ep" {
+  provider = aws.r53
+  count = 1  
+  zone_id = data.aws_route53_zone.ppe_hosted_zone.zone_id
+  name    = "proxy2-d"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_vpc_endpoint.dmz-sqd-ep[count.index].dns_name]
+}
+Error: Unsupported attribute │ │   on R... by Garg, Anshul
+Garg, Anshul
+6:06 PM
+Error: Unsupported attribute
+│
+│   on Resources\route53.tf line 171, in resource "aws_route53_record" "dmz-sqd-ep":
+│  171:   records = [aws_vpc_endpoint.dmz-sqd-ep[count.index].dns_name]
+│     ├────────────────
+│     │ aws_vpc_endpoint.dmz-sqd-ep is tuple with 1 element
+│     │ count.index is 0
+│
+│ This object does not have an attribute named "dns_name".
+
+has context menu
