@@ -287,3 +287,8 @@ make install DESTDIR=%{buildroot}
 %{_prefix}/include/*
 %{_prefix}/lib/*
 %{_prefix}/share/man/man1/*
+
+
+
+
+error: File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.10-10.x86_64/usr/share/man/man1/*
