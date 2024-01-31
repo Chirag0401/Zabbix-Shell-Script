@@ -183,3 +183,22 @@ General Configuration
 Positive Impact: Optimizes security and performance.
 Negative if Not Implemented: Potential security gaps and inefficiencies.
 Use Case: Optimizes server performance and security, ensuring the server runs efficiently and securely.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://people.planetpostgresql.org/devrim/index.php?/archives/117-How-To-Build-Your-Own-PostgreSQL-and-related-software-RPMs-on-RHELRockyFedora.html
