@@ -355,3 +355,4 @@ Error: Unsupported attribute
 │ This object does not have an attribute named "dns_name".
 
 has context menu
+records = [aws_vpc_endpoint.dmz-sqd-ep[count.index].dns_entry[0].dns_name]
