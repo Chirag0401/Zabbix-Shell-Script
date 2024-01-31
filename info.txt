@@ -292,3 +292,36 @@ make install DESTDIR=%{buildroot}
 
 
 error: File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.10-10.x86_64/usr/share/man/man1/*
+
+
+
+%define version 14.10
+%define release 10
+Summary: PostgreSQL relational database management system
+Name: postgresql
+Version: %{version}
+Release: %{release}
+License: PostgreSQL
+URL: https://www.postgresql.org/
+Source0: https://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.gz
+BuildRequires: readline-devel, zlib-devel
+
+%description
+PostgreSQL is an advanced object-relational database management system (DBMS).
+
+%prep
+%setup -q -n postgresql-%{version}
+
+%build
+./configure --prefix=%{_prefix}
+make
+
+%install
+make install DESTDIR=%{buildroot}
+
+%files
+%{_prefix}/bin/*
+%{_prefix}/include/*
+%{_prefix}/lib/*
+# Conditionally include man pages if they exist
+%exclude %{_prefix}/share/man/man1/*
