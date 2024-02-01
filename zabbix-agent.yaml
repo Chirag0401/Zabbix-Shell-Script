@@ -1,0 +1,202 @@
+- hosts: "{{ hosts }}"
+  become: yes
+  serial: 5
+  vars:
+    project: ""
+    env: ""
+    env_version: ""
+    Jmx_Client: "false"
+    jmx_client: "false"
+    JMX_CLIENT: "false"
+    mode: ""
+      #host_role: ""
+    ###
+    ZabbixServerIP1: "10.140.241.214" 
+    ZabbixServerIP2: "10.140.241.35" 
+    ZabbixServerIP3: "10.141.26.206" 
+    ZabbixServerIP4: "10.141.26.199" 
+    #### Zabbix Server Non Prod ###
+    ZabbixServerName1: "eu-we1-mo01"
+    ZabbixServerName2: "eu-we1-mo02"
+    ZabbixServerName3: "eu-ce1-mo01"
+    ZabbixServerName4: "eu-ce1-mo02"
+    
+    ZabbixMetaData: ":role={{ rolev }}:env={{ env }}:project={{ project }}"
+    ## Default
+    DomainName: ""
+  tasks:
+    #    - name: 'Check mandatory variables are defined'
+    #  assert:
+    #    that:
+    #      - project is defined
+    #      - env_vesion is defined
+    - name: Set Facts for Zabbix Proxy - WPT PPE 
+      set_fact:
+        DomainName: "ppe.wpt.local"
+        ZabbixProxy: "{% if env_version == 'ppe01' or env_version == 'ppe1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.ppe.wpt.local
+        {% elif  env_version == 'ppe02' or env_version == 'ppe2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.ppe.wpt.local
+        {% endif %}"
+      when: 
+        - project == "wpt" and env == "ppe"
+    
+    - name: Set Facts for Zabbix - OMS PPE
+      set_fact:
+        DomainName: "ppe.bcs.local"
+        ZabbixProxy: "{% if env_version == 'ppe01' or env_version == 'ppe1'  and mode == 'proxy' %}
+        zabbix-proxy-d-we1.oms.ppe.bcs.local
+        {% elif  env_version == 'ppe02' or env_version == 'ppe2'  and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.oms.ppe.bcs.local
+        {% endif %}"
+      when: 
+        - project == "oms" and env == "ppe"
+
+    - name: Set Facts for Zabbix  - BCS SIT
+      set_fact:
+        DomainName: "sit.bcs.local"
+        ZabbixProxy: "{% if env_version == 'sit01' or env_version == 'sit1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.sit.bcs.local
+         {% elif  env_version == 'sit02' or env_version == 'sit2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.sit.bcs.local
+        {% endif %}"
+      when: 
+        - project == "bcs" and env == "sit"
+        
+    - name: Set Facts for Zabbix  - OMS SIT
+      set_fact:
+        DomainName: "sit.bcs.local"
+        ZabbixProxy: "{% if env_version == 'sit01' or env_version == 'sit1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.oms.sit.bcs.local
+         {% elif  env_version == 'sit02' or env_version == 'sit2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.oms.sit.bcs.local
+        {% endif %}"
+      when: 
+        - project == "oms" and env == "sit"    
+    
+    - name: Set Facts for Zabbix - BCS Patching env=(patch)
+      set_fact:
+        DomainName: "patch.bcs.local"
+      when: 
+        - project == "bcs" and env == "patch" 
+    
+    - name: Set Facts for Zabbix - Shopify env=(ppe1)
+      set_fact:
+        DomainName: "ppe.shp.local"
+        ZabbixProxy: "{% if env_version == 'ppe01' or env_version == 'ppe1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.ppe.shp.local
+         {% elif  env_version == 'ppe02' or env_version == 'ppe2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.ppe.shp.local
+        {% endif %}"
+      when: 
+        - project == "shp" and env == "ppe" 
+        
+############################################ PROD ######################################
+    - name: Set Facts for PROD Zabbix - WPT PROD
+      set_fact:
+        DomainName: "prod.wpt.local"
+        ZabbixProxy: "{% if env_version == 'prod01' or env_version == 'prod1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.prod.wpt.local
+        {% elif  env_version == 'prod02'  or env_version == 'prod2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.prod.wpt.local
+        {% endif %}"
+      when: 
+        - project == "wpt" and env == "prod"
+    
+    - name: Set Facts for PROD Zabbix - WPT MUAT
+      set_fact:
+        DomainName: "muat.wpt.local"
+        ZabbixProxy: "{% if env_version == 'muat01' or  env_version == 'muat1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.muat.wpt.local
+        {% elif  env_version == 'muat02' or  env_version == 'muat2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.muat.wpt.local
+        {% endif %}"
+      when: 
+        - project == "wpt" and env == "muat"
+    
+    - name: Set Facts for PROD Zabbix - OMS PROD
+      set_fact:
+        DomainName: "prod.bcs.local"
+        ZabbixProxy: "{% if env_version == 'prod01' or env_version == 'prod1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.prod.bcs.local
+        {% elif  env_version == 'prod02' or env_version == 'prod2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.prod.bcs.local
+        {% endif %}"
+      when: 
+        - project == "oms" and env == "prod"
+    
+    - name: Set Facts for PROD Zabbix - BCS PROD
+      set_fact:
+        DomainName: "prod.bcs.local"
+        ZabbixProxy: "{% if env_version == 'prod01' or env_version == 'prod1'  and mode == 'proxy' %}
+        zabbix-proxy-we1.prod.bcs.local
+        {% elif  env_version == 'prod02' or env_version == 'prod1' and mode == 'proxy' %}
+        zabbix-proxy-ce1.prod.bcs.local
+        {% endif %}"
+      when: 
+        - project == "bcs" and env == "prod"
+        
+    - name: Set Facts for Zabbix - Shopify env=(PROD)
+      set_fact:
+        DomainName: "prod.shp.local"
+        ZabbixProxy: "{% if env_version == 'prod01' or env_version == 'prod1' and mode == 'proxy' %}
+        zabbix-proxy-d-we1.prod.shp.local
+         {% elif  env_version == 'prod02' or env_version == 'prod2' and mode == 'proxy' %}
+        zabbix-proxy-d-ce1.prod.shp.local
+        {% endif %}"
+      when: 
+        - project == "shp" and env == "prod" 
+    
+
+    - name: Set Fact for Core Zabbix network for Non Prod  
+      set_fact:
+        ServerActive: "{{ ZabbixServerName1 }}.ops.ped.local;{{ ZabbixServerName2 }}.ops.ped.local;{{ ZabbixServerName3 }}.ops.ped.local;{{ ZabbixServerName4 }}.ops.ped.local"
+        Server: "{{ ZabbixServerName1 }}.ops.ped.local,{{ ZabbixServerName2 }}.ops.ped.local,{{ ZabbixServerName3 }}.ops.ped.local,{{ ZabbixServerName4 }}.ops.ped.local"
+      when: env != "prod" or env != "muat"  
+      
+    - name: Set Fact for Core Zabbix network for PROD
+      set_fact:
+        ServerActive: "{{ ZabbixServerName1 }}.prod.ops.local;{{ ZabbixServerName2 }}.prod.ops.local;{{ ZabbixServerName3 }}.prod.ops.local;{{ ZabbixServerName4 }}.prod.ops.local"
+        Server: "{{ ZabbixServerName1 }}.prod.ops.local,{{ ZabbixServerName2 }}.prod.ops.local,{{ ZabbixServerName3 }}.prod.ops.local,{{ ZabbixServerName4 }}.prod.ops.local"
+      when: env == "prod" or env == "muat"  
+      
+    - debug:
+        var: ZabbixProxy, DomainName, ServerActive, Server
+
+
+    - name: Set facts
+      set_fact:
+        #rolev: "{{ inventory_hostname.split('-')[3][:3]}}"
+        #rolev: "{{ inventory_hostname.split('-')[2][:2]}}"
+        rolev: "{% if host_role is not defined %}{{ inventory_hostname.split('-')[3][:3]}}{% else %} {{ host_role }} {% endif %}"
+          #rolev: "{% if host_role is not defined %} {{ inventory_hostname.split('-')[3][:3]}} {% else %} {{ host_role }} {% endif %}"
+      ignore_errors: yes
+          #when: rolev is defined  
+    - name: Include task when ansible distribution is debian
+      ansible.builtin.include_tasks: "zabbix-debian.yaml"
+      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+    - name: Include task when ansible distribution is redhat or amazon linux or centos
+      ansible.builtin.include_tasks: "zabbix-rpm.yaml"
+      when: ansible_distribution == 'CentOS' or ansible_distribution == 'Amazon' or  ansible_distribution == 'RedHat'
+    - name: Include task for JMX Client Setup
+      ansible.builtin.include_tasks: "jmx-client.yaml"
+      when: jmx_client | bool or JMX_CLIENT | bool or Jmx_Client | bool
+   #        #    - name:  Sudoers Rule
+        #ansible.builtin.include_tasks: "zabbix-sudoRules.yml" 
+    - name: Make Sure below Zabbix Route53 A record should resolve & reachable from your account to reach zabbix server 
+      debug:
+        msg:
+         -  " {{ ZabbixServerName1 }}.ops.ped.local - 10.140.241.35  "
+         -  " {{ ZabbixServerName2 }}.ops.ped.local - 10.140.241.214 "
+         -  " {{ ZabbixServerName3 }}.ops.ped.local - 10.141.26.199  "
+         -  " {{ ZabbixServerName4 }}.ops.ped.local - 10.141.26.206  "
+      when: env == "ppe" or env == "sit" or env == "dev" or  env == 'patch'
+    - name: Make Sure below Zabbix Route53 A record should resolve & reachable from your account to reach zabbix server
+      debug:
+        msg:
+         -  " {{ ZabbixServerName1 }}.prod.ops.local - 10.140.206.55  "
+         -  " {{ ZabbixServerName2 }}.prod.ops.local - 10.140.206.84 "
+         -  " {{ ZabbixServerName3 }}.prod.ops.local - 10.141.17.49  "
+         -  " {{ ZabbixServerName4 }}.prod.ops.local - 10.141.17.224  "
+      when: env == "prod" or env == "muat" 
