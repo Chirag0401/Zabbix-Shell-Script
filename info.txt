@@ -421,37 +421,8 @@ ERROR: Script failed at line 67
 
 
 
-#!/bin/bash
+RPM build errors:
+    File not found by glob: /home/ec2-user/rpmbuild/BUILDROOT/postgresql-14.1-1.x86_64/usr/share/man/man1/*
+   /usr/share/postgresql/tsearch_data/turkish.stop
+ERROR: Script failed at line 67
 
-# Function to handle errors
-error_handler() {
-    echo "ERROR: Script failed at line $1"
-    exit 1
-}
-
-# Trap any error and call error_handler
-trap 'error_handler $LINENO' ERR
-
-echo "Starting RPM build process for PostgreSQL..."
-
-# Install Prerequisites
-echo "Installing prerequisites..."
-sudo yum install -y rpm-build make gcc libtool wget readline-devel zlib-devel || error_handler $LINENO
-
-# Download PostgreSQL Source Code
-echo "Downloading PostgreSQL source code..."
-wget https://ftp.postgresql.org/pub/source/v14.1/postgresql-14.1.tar.gz || error_handler $LINENO
-
-# Prepare RPM Building Environment
-echo "Preparing RPM building environment..."
-mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} || error_handler $LINENO
-
-# Create Spec File
-echo "Creating spec file..."
-# [Rest of your script for creating spec file and building the RPM]
-
-# Install Resulting RPMs
-echo "Installing resulting RPMs..."
-sudo yum localinstall ~/rpmbuild/RPMS/x86_64/postgresql-14.1-1.x86_64.rpm || error_handler $LINENO
-
-echo "PostgreSQL RPM build and installation complete."
