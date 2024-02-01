@@ -1,0 +1,2 @@
+
+ldapServer: "ldap://UKDC1-OC-ADC01.worldpaypp.local ldap://UKDC2-OC-ADC01.worldpaypp.local"
