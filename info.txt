@@ -485,3 +485,9 @@ sudo yum localinstall ~/rpmbuild/RPMS/x86_64/postgresql-14.1-1.x86_64.rpm || err
 
 echo "PostgreSQL RPM build and installation complete."
 
+
+
+
+Preparing RPM building environment...
+Creating spec file...
+install.sh: line 73: warning: here-document at line 28 delimited by end-of-file (wanted `EOL')
