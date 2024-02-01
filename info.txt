@@ -329,6 +329,53 @@ make install DESTDIR=%{buildroot}
 
 
 
+```bash
+# Install Prerequisites
+sudo dnf install rpm-build make gcc libtool
+# Download PostgreSQL Source Code
+wget https://ftp.postgresql.org/pub/source/v14.1/postgresql-14.1.tar.gz
+# Prepare RPM Building Environment
+mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+# Create Spec File
+cat <<EOL > ~/rpmbuild/SPECS/postgresql.spec
+%define version 14.10
+%define release 10
+Summary: PostgreSQL relational database management system
+Name: postgresql
+Version: %{version}
+Release: %{release}
+License: PostgreSQL
+URL: https://www.postgresql.org/
+Source0: https://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.gz
+BuildRequires: readline-devel, zlib-devel
+
+%description
+PostgreSQL is an advanced object-relational database management system (DBMS).
+
+%prep
+%setup -q -n postgresql-%{version}
+
+%build
+./configure --prefix=%{_prefix}
+make
+
+%install
+make install DESTDIR=%{buildroot}
+
+%files
+%{_prefix}/bin/*
+%{_prefix}/include/*
+%{_prefix}/lib/*
+# Conditionally include man pages if they exist
+%exclude %{_prefix}/share/man/man1/*
+EOL
+# Place Source Code
+mv postgresql-14.1.tar.gz ~/rpmbuild/SOURCES/
+# Build RPMs
+rpmbuild -ba ~/rpmbuild/SPECS/postgresql.spec
+# Install Resulting RPMs
+sudo dnf install ~/rpmbuild/RPMS/x86_64/postgresql-14.1-1.fc33.x86_64.rpm
+```
 
 
 # #Save Record In Route53 -- dmz-sqd-ep--
