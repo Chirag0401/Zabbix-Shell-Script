@@ -1,0 +1,200 @@
+cat /etc/systemd/system/postgresql.service
+[Unit]
+Description=PostgreSQL database server
+After=network.target
+ 
+[Service]
+Type=forking
+ 
+User=postgres12
+ 
+ 
+Environment=PGPORT=5432
+ 
+Environment=PGDATA=/usr/local/pgsql/data
+ 
+ 
+OOMScoreAdjust=-1000
+ 
+#ExecStartPre=/usr/bin/postgresql-check-db-dir ${PGDATA}
+ExecStart=/usr/bin/pg_ctl start -D ${PGDATA} -s -o "-p ${PGPORT}" -w -t 300
+ExecStop=/usr/bin/pg_ctl stop -D ${PGDATA} -s -m fast
+ExecReload=/usr/bin/pg_ctl reload -D ${PGDATA} -s
+ 
+TimeoutSec=300
+ 
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+############################################################################
+
+sudo mkdir -p  /usr/local/pgsql/data
+sudo adduser --system --home=/usr/local/pgsql --shell=/bin/bash postgres12
+sudo chown -R postgres12:postgres12 /usr/local/pgsql/
+sudo su - postgres12 -c '/usr/bin/initdb -D /usr/local/pgsql/data'
+sudo su - postgres12 -c '/usr/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start'
+sudo su - postgres12 -c '/usr/bin/pg_ctl -D /usr/local/pgsql/data status'
+
+#############################################################################
+%define version 14.10
+%define release 1
+Summary: PostgreSQL relational database management system
+Name: postgresql
+Version: %{version}
+Release: %{release}
+License: PostgreSQL
+URL: https://www.postgresql.org/
+Source0: https://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.gz
+BuildRequires: readline-devel zlib-devel
+%description
+PostgreSQL is an advanced object-relational database management system (DBMS).
+%prep
+%setup -q -n postgresql-%{version}
+%define debug_package %{nil}
+%build
+./configure --prefix=%{_prefix}
+make
+%install
+make install DESTDIR=%{buildroot}
+%files
+%{_prefix}/bin/*
+%{_prefix}/include/*
+%{_prefix}/lib/*
+%{_datarootdir}/postgresql/*
+####################################################################################
+
+#!/bin/bash
+ 
+# Function to handle errors
+error_handler() {
+    echo "ERROR: Script failed at line $1"
+    exit 1
+}
+ 
+# Trap any error and call error_handler
+trap 'error_handler $LINENO' ERR
+ 
+echo "Starting RPM build process for PostgreSQL..."
+ 
+# Install Prerequisites
+echo "Installing prerequisites..."
+sudo yum install -y rpm-build make gcc libtool wget readline-devel zlib-devel || error_handler $LINENO
+ 
+# Download PostgreSQL Source Code
+echo "Downloading PostgreSQL source code..."
+wget https://ftp.postgresql.org/pub/source/v14.1/postgresql-14.1.tar.gz || error_handler $LINENO
+ 
+# Prepare RPM Building Environment
+echo "Preparing RPM building environment..."
+mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} || error_handler $LINENO
+ 
+# Create PostgreSQL service file
+echo "Creating PostgreSQL service file..."
+cat <<EOF > ~/rpmbuild/SOURCES/postgresql.service
+[Unit]
+Description=PostgreSQL database server
+After=network.target
+ 
+[Service]
+Type=forking
+ 
+User=postgres
+Group=postgres
+ 
+# Location of database directory
+Environment=PGDATA=/var/lib/pgsql/data
+ 
+ExecStart=/usr/bin/pg_ctl start -D \${PGDATA} -s -w -t 300
+ExecStop=/usr/bin/pg_ctl stop -D \${PGDATA} -s -m fast
+ExecReload=/usr/bin/pg_ctl reload -D \${PGDATA} -s
+ 
+# Give a reasonable amount of time for the server to start up/shut down
+TimeoutSec=300
+ 
+[Install]
+WantedBy=multi-user.target
+EOF
+echo "PostgreSQL service file created."
+ 
+# Create Spec File
+echo "Creating spec file..."
+cat <<EOF > ~/rpmbuild/SPECS/postgresql.spec
+%define version 14.1
+%define release 1
+%define debug_package %{nil}
+Summary: PostgreSQL relational database management system
+Name: postgresql
+Version: %{version}
+Release: %{release}
+License: PostgreSQL
+URL: https://www.postgresql.org/
+Source0: https://ftp.postgresql.org/pub/source/v%{version}/postgresql-%{version}.tar.gz
+Source1: postgresql.service
+BuildRequires: readline-devel, zlib-devel
+ 
+%description
+PostgreSQL is an advanced object-relational database management system (DBMS).
+ 
+%prep
+%setup -q -n postgresql-%{version}
+ 
+%build
+./configure --prefix=%{_prefix}
+make
+ 
+%install
+make install DESTDIR=%{buildroot}
+ 
+# Install the systemd service file
+install -Dm 644 %{_sourcedir}/postgresql.service %{buildroot}%{_unitdir}/postgresql.service
+ 
+%files
+%{_prefix}/bin/*
+%{_prefix}/include/*
+%{_prefix}/lib/*
+%{_prefix}/share/man/man1/*
+/usr/share/postgresql/*
+%{_unitdir}/postgresql.service
+ 
+%post
+# Reload systemd to recognize the new service
+/sbin/systemctl daemon-reload
+ 
+# Optionally enable and start the service
+#/sbin/systemctl enable postgresql.service
+#/sbin/systemctl start postgresql.service
+ 
+%preun
+# Only on uninstall, not on upgrade
+if [ \$1 -eq 0 ] ; then
+    /sbin/systemctl --no-reload disable postgresql.service > /dev/null 2>&1 || :
+    /sbin/systemctl stop postgresql.service > /dev/null 2>&1 || :
+fi
+ 
+%postun
+# Reload systemd after uninstall
+/sbin/systemctl daemon-reload
+ 
+%changelog
+EOF
+echo "PostgreSQL spec file created."
+ 
+# Place Source Code and Service File
+echo "Placing source code in build environment..."
+mv postgresql-14.1.tar.gz ~/rpmbuild/SOURCES/ || error_handler $LINENO
+mv ~/rpmbuild/SOURCES/postgresql.service ~/rpmbuild/SOURCES/ || error_handler $LINENO
+ 
+# Build RPMs
+echo "Building RPMs..."
+rpmbuild -ba ~/rpmbuild/SPECS/postgresql.spec || error_handler $LINENO
+ 
+# Install Resulting RPMs
+echo "Installing resulting RPMs..."
+sudo yum localinstall ~/rpmbuild/RPMS/x86_64/postgresql-14.1-1.x86_64.rpm --skip-broken || error_handler $LINENO
+ 
+echo "PostgreSQL RPM build and installation complete."
