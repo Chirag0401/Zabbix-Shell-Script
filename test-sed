@@ -1,1 +1,15 @@
 sudo sed -i 's|proxy=http://proxy1.patch.bcs.local:3128|new_line|' /etc/yum.conf This is working but what if there is no such line (old line) in /etc/yum.conf but still I want to append the new line in this file. How can I do that?
+#!/bin/bash
+
+OLD_LINE="proxy=http://proxy1.patch.bcs.local:3128"
+NEW_LINE="new_line"
+FILE="/etc/yum.conf"
+
+# Check if the old line exists in the file
+if grep -q "$OLD_LINE" "$FILE"; then
+    # The old line exists, replace it
+    sudo sed -i "s|$OLD_LINE|$NEW_LINE|" "$FILE"
+else
+    # The old line does not exist, append the new line
+    echo "$NEW_LINE" | sudo tee -a "$FILE" > /dev/null
+fi
