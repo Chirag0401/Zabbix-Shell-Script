@@ -32,14 +32,24 @@ check_step() {
     return 0 # Continue with this step
 }
 
+# Check if the PostgreSQL service is already running
+service_running() {
+    if systemctl is-active --quiet postgresql.service; then
+        log_message "PostgreSQL service is already running."
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Trap any error and call error_handler with the step number
 trap 'error_handler $LINENO' ERR
 
-
 # Step 1: Create PostgreSQL service file
 if check_step 1; then
-    log_message "Step 1: Creating PostgreSQL service file..."
-    cat <<EOF > /etc/systemd/system/postgresql.service
+    if [ ! -f "$PG_SERVICE_FILE" ]; then
+        log_message "Step 1: Creating PostgreSQL service file..."
+        cat <<EOF > "$PG_SERVICE_FILE"
 [Unit]
 Description=PostgreSQL database server
 After=network.target
@@ -62,15 +72,15 @@ TimeoutSec=300
 [Install]
 WantedBy=multi-user.target
 EOF
+    else
+        log_message "PostgreSQL service file already exists."
+    fi
     echo "1" > "$STEP_TRACKER"
 fi
 
 # Step 2: Build and install the custom PostgreSQL RPM
 if check_step 2; then
-    log_message "Step 2: Building and installing the custom PostgreSQL RPM..."
-    # sudo yum install -y rpmdevtools && rpmdev-setuptree
-   # wget -P ~/rpmbuild/SOURCES/ https://ftp.postgresql.org/pub/source/v$PG_VERSION/postgresql-$PG_VERSION.tar.gz
-    # rpmbuild -ba ~/rpmbuild/SPECS/$PG_SPEC_FILE
+    log_message "Step 2: Installing the custom PostgreSQL RPM..."
     sudo yum install /tmp/postgresql-${PG_VERSION}* -y
     echo "2" > "$STEP_TRACKER"
 fi
@@ -78,19 +88,24 @@ fi
 # Step 3: Environment setup for PostgreSQL
 if check_step 3; then
     log_message "Step 3: Environment setup for PostgreSQL..."
-    sudo mkdir -p /usr/local/pgsql/data
-    sudo adduser --system --home=/usr/local/pgsql --shell=/bin/bash $PG_USER
-    sudo chown -R $PG_USER:$PG_USER /usr/local/pgsql/
+    if [ ! -d "/usr/local/pgsql/data" ]; then
+        sudo mkdir -p /usr/local/pgsql/data
+        sudo adduser --system --home=/usr/local/pgsql --shell=/bin/bash $PG_USER
+        sudo chown -R $PG_USER:$PG_USER /usr/local/pgsql/
+    else
+        log_message "/usr/local/pgsql/data already exists."
+    fi
     echo "3" > "$STEP_TRACKER"
 fi
 
 # Step 4: Initialize and start PostgreSQL
 if check_step 4; then
     log_message "Step 4: Initializing and starting PostgreSQL..."
-    sudo su - $PG_USER -c '/usr/bin/initdb -D /usr/local/pgsql/data'
-    # sudo su - $PG_USER -c '/usr/bin/pg_ctl -D /usr/local/pgsql/data -l logfile start'
-    # sudo su - $PG_USER -c '/usr/bin/pg_ctl -D /usr/local/pgsql/data status'
-    sudo systemctl start postgresql.service
+    if ! service_running; then
+        sudo su - $PG_USER -c '/usr/bin/initdb -D /usr/local/pgsql/data'
+        sudo systemctl enable postgresql.service
+        sudo systemctl start postgresql.service
+    fi
     sudo systemctl status postgresql.service
     echo "4" > "$STEP_TRACKER"
 fi
